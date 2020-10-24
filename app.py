@@ -194,6 +194,25 @@ def profile():
 @ app.route('/newPost')
 @login_required
 def add_post():
+    message = ''
+    if request.method == "POST" and 'bodytext' in request.form:
+        bodytext = request.form['bodytext']
+        c, conn = connection()
+
+        c.execute("SELECT * FROM posts WHERE thread_bodytext = % s", (escape_string(bodytext),))
+        acct = c.fetchone()
+        
+        if acct:
+            message = 'Identical post already exists!'
+        else:
+            c.execute("INSERT INTO posts (thread_id, thread_bodytext) VALUES (%s, %s, %s)", (escape_string(bodytext))               
+            conn.commit()
+            message = "Post Successful"
+            return redirect(url_for("index"))
+
+    elif request.method == 'POST':
+        message = "Missing information! (Fill out)"        
+
     return render_template('add_post.html')
 
 if __name__ == "__main__":
